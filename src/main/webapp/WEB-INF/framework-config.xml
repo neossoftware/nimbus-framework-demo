@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mvc-config>
+
+    <!-- Propiedades inyectadas con @Value("${clave}") o @Value("${clave:default}") -->
+    <properties file="classpath:app.properties"/>
+
+    <view-resolver prefix="/WEB-INF/views/" suffix=".jsp"/>
+
+    <component-scan base-package="com.example"/>
+
+    <!-- Beans configurados por XML (sin anotaciones) en un archivo aparte -->
+    <import resource="application/config/beans-config.xml"/>
+
+    <!--
+      Interceptores — se ejecutan en orden de declaración.
+        AuditLogInterceptor : registra cada petición con método, path, status y tiempo
+        AuthInterceptor     : exige header X-API-Key en /api/* (clave en app.properties)
+    -->
+    <interceptors>
+        <interceptor class="com.example.interceptor.AuditLogInterceptor"/>
+        <interceptor class="com.example.interceptor.AuthInterceptor"/>
+    </interceptors>
+
+</mvc-config>

@@ -1,0 +1,29 @@
+<mvc-config>
+
+    <!-- Beans configurados por XML en vez de anotaciones, cargados vía
+         <import> desde framework-config.xml. -->
+
+    <bean id="appInfo" class="com.example.config.AppInfo">
+        <property name="nombre"  value="Nimbus Demo"/>
+        <property name="version" value="1.0.0"/>
+    </bean>
+
+    <bean id="welcomeBanner" class="com.example.config.WelcomeBanner">
+        <property name="appInfo" ref="appInfo"/>
+    </bean>
+
+    <!-- Paquete fuera de com.example: solo se detecta si este component-scan,
+         declarado DENTRO del import, se procesa realmente. -->
+    <component-scan base-package="com.otropaquete"/>
+
+    <!-- Flujo de validaciones custom (Validator + Errors + MessageSource),
+         conectado a CursoController vía @InitBinder. -->
+    <bean id="messageSource" class="com.nimbusframework.validation.ResourceBundleMessageSource">
+        <property name="basename">
+            <value>classpath:application/locallization/trust_resource</value>
+        </property>
+    </bean>
+
+    <bean id="cursoValidator" class="com.example.validation.CursoValidator"/>
+
+</mvc-config>
