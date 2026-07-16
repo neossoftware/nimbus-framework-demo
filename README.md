@@ -1,6 +1,6 @@
 # Nimbus Framework — Example App
 
-Aplicación de ejemplo, completa y ejecutable, para el [Nimbus Framework](../nimbus).
+Aplicación de ejemplo, completa y ejecutable, para el [Nimbus Framework](https://github.com/neossoftware/nimbus-framework).
 Cubre cada feature del framework con endpoints reales: MVC clásico con JSP, API
 REST con JSON, inyección de dependencias (por campo, constructor, XML y
 component-scan en múltiples paquetes), validación por anotaciones y custom,
@@ -14,7 +14,7 @@ levanta sola en cualquier contenedor Servlet 3.0+ sin configuración adicional.
 - Java 8+
 - Maven 3.x
 - Un contenedor de servlets (Tomcat 7-9, IBM WAS 8.5, o cualquier compatible con Servlet API 3.0+)
-- [`nimbus-framework`](../nimbus) instalado en el repositorio local de Maven (`mvn install` en ese proyecto)
+- [`nimbus-framework`](https://github.com/neossoftware/nimbus-framework) instalado en el repositorio local de Maven (`mvn install` en ese proyecto)
 
 ## Ejecutar
 
