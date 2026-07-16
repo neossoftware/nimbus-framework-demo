@@ -142,7 +142,7 @@ src/main/webapp
 
 ## Licencia
 
-GNU General Public License v3.0 (GPL-3.0). Ver el proyecto [`nimbus`](../nimbus/LICENSE).
+GNU General Public License v3.0 (GPL-3.0). Ver el proyecto [`nimbus`](https://github.com/neossoftware/nimbus-framework).
 
 ## Autor
 
