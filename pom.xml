@@ -62,6 +62,16 @@
             <artifactId>jackson-databind</artifactId>
             <version>2.13.5</version>
         </dependency>
+
+        <!-- H2 en memoria — demo de JdbcTemplate/NamedParameterJdbcTemplate (com.example.dao).
+             Solo se referencia "org.h2.Driver" por nombre de clase desde properties/XML,
+             sin import directo de clases H2 en el código Java: alcanza con scope runtime. -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>2.2.224</version>
+            <scope>runtime</scope>
+        </dependency>
     </dependencies>
 
     <build>

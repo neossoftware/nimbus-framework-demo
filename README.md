@@ -6,8 +6,12 @@ REST con JSON, inyección de dependencias (por campo, constructor, XML y
 component-scan en múltiples paquetes), validación por anotaciones y custom,
 interceptores, manejo de errores y scopes de bean.
 
-No usa base de datos: los servicios guardan datos en memoria, así que la app
-levanta sola en cualquier contenedor Servlet 3.0+ sin configuración adicional.
+El dominio "Curso" está expuesto por **dos caminos en paralelo**, para comparar
+enfoques: uno 100% en memoria (sin base de datos, la app levanta sola en cualquier
+contenedor Servlet 3.0+ sin configuración adicional) y otro respaldado por H2 real vía
+`JdbcTemplate`/`NamedParameterJdbcTemplate` (ver sección "CRUD de Cursos (H2/JDBC)" más
+abajo) — mismo modelo, misma validación, distinta implementación de servicio
+seleccionada con `@Qualifier`.
 
 ## Requisitos
 
@@ -65,6 +69,27 @@ La app queda disponible en `http://localhost:8080/nimbus-example-1.0.0/`
 | GET | `/cursos/eliminar/{id}.do` | Baja |
 | GET | `/cursos/exportar.do?nivel=...` | Descarga CSV, respuesta directa al `response` |
 
+### CRUD de Cursos (H2/JDBC)
+
+Mismas rutas y comportamiento que el CRUD de Cursos en memoria de arriba, pero bajo
+`/cursos-jdbc/*` y `/api/cursos-jdbc`, respaldado por H2 real vía `CursoJdbcDaoImpl`
+(`JdbcTemplate` + `NamedParameterJdbcTemplate`) — ver "Qué demuestra cada pieza" abajo.
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/cursos-jdbc/lista.do` | Listado (SQL vía `JdbcTemplate`) |
+| GET | `/cursos-jdbc/nuevo.do` | Formulario de alta |
+| POST | `/cursos-jdbc/guardar.do` | Alta — `NamedParameterJdbcTemplate` + `GeneratedKeyHolder` para el id autogenerado |
+| GET | `/cursos-jdbc/editar/{id}.do` | Formulario de edición |
+| POST | `/cursos-jdbc/actualizar.do` | Edición — `NamedParameterJdbcTemplate` (UPDATE con parámetros nombrados) |
+| GET | `/cursos-jdbc/eliminar/{id}.do` | Baja |
+| GET | `/cursos-jdbc/exportar.do?nivel=...` | Descarga CSV |
+| GET | `/api/cursos-jdbc` | Lista todos |
+| GET | `/api/cursos-jdbc/{id}` | Busca por id (404 vía `GlobalExceptionHandler`) |
+| POST | `/api/cursos-jdbc` | Crea, con `@Valid @RequestBody` |
+| PUT | `/api/cursos-jdbc/{id}` | Actualiza |
+| DELETE | `/api/cursos-jdbc/{id}` | Elimina |
+
 ### API REST (`/api/*`, requiere header `X-API-Key`)
 
 | Método | Ruta | Descripción |
@@ -108,6 +133,27 @@ curl -H "X-API-Key: nimbus-secret-2024" http://localhost:8080/nimbus-example-1.0
   cada inyección y cada `getBean()` produce una instancia distinta.
 - **`CursoServiceImpl`** — persistencia en memoria (`ConcurrentHashMap`),
   incluida paginación con `Page`/`Pageable`/`PageRequest`/`Sort`.
+- **`CursoJdbcDaoImpl` / `CursoServiceJdbcImpl` / `CursoJdbcController` /
+  `CursoJdbcRestController`** — camino paralelo respaldado por H2 real. El DAO reparte
+  deliberadamente entre `JdbcTemplate` (SQL simple, 0-1 parámetro posicional:
+  `listarTodos`/`buscarPorId`/`eliminar`/`contar`) y `NamedParameterJdbcTemplate`
+  (INSERT/UPDATE con varios campos con nombre y el paginado con `LIMIT`/`OFFSET`
+  nombrados), más `GeneratedKeyHolder` para recuperar el id autogenerado en cada
+  alta. `CursoServiceJdbcImpl` implementa la misma interfaz `CursoService` que la
+  versión en memoria; los controllers "-jdbc" la seleccionan con
+  `@Qualifier("cursoServiceJdbcImpl")` — igual patrón que `Email`/`SmsNotificationService`.
+- **`dataSource` / `jdbcTemplate` / `namedParameterJdbcTemplate`** (beans XML en
+  `beans-config.xml`) — `DriverManagerDataSource` sobre H2 en memoria
+  (`db.driver`/`db.url`/`db.user`/`db.password` en `app.properties`); el propio XML
+  documenta en un comentario cómo reemplazar ese bean por
+  `JndiObjectFactoryBean` para usar el pool de conexiones del contenedor en
+  WAS 8.5/Tomcat productivo, sin tocar nada más.
+- **`schema.sql`** — crea la tabla `cursos` y siembra los mismos 4 cursos que
+  `CursoServiceImpl`, ejecutado por H2 en cada conexión vía
+  `INIT=RUNSCRIPT FROM 'classpath:schema.sql'` (idempotente: `CREATE TABLE IF NOT
+  EXISTS` + `MERGE` + `ALTER TABLE ... RESTART WITH` recalculado sobre el `MAX(id)`
+  real, necesario porque `DriverManagerDataSource` no usa pool — cada operación abre
+  una conexión nueva).
 
 ## Estructura
 
@@ -116,11 +162,14 @@ src/main/java/com/example
 ├── component      RequestTracker (@Scope prototype)
 ├── config         AppInfo, WelcomeBanner — beans 100% XML
 ├── controller      HomeController, CursoController, CursoRestController,
+│                   CursoJdbcController, CursoJdbcRestController,
 │                   NotificacionController, NotificacionMvcController, ScopeController
+├── dao            CursoDao (+ impl/CursoJdbcDaoImpl — JdbcTemplate/NamedParameterJdbcTemplate)
 ├── exception       ApiError, GlobalExceptionHandler (@ControllerAdvice)
 ├── interceptor     AuditLogInterceptor, AuthInterceptor
 ├── model           Curso, Greeting
-├── service         CursoService, NotificationService, UserService (+ impl/)
+├── service         CursoService, NotificationService, UserService
+│                   (+ impl/: CursoServiceImpl en memoria, CursoServiceJdbcImpl vía CursoDao)
 └── validation      CursoValidator
 
 src/main/java/com/otropaquete
@@ -128,8 +177,9 @@ src/main/java/com/otropaquete
 
 src/main/resources
 ├── app.properties
+├── schema.sql       tabla + seed de "cursos" para H2 (INIT=RUNSCRIPT, ver app.properties)
 └── application
-    ├── config/beans-config.xml
+    ├── config/beans-config.xml   (dataSource/jdbcTemplate/namedParameterJdbcTemplate acá)
     └── locallization/trust_resource.properties
 
 src/main/webapp
@@ -137,8 +187,19 @@ src/main/webapp
 └── WEB-INF
     ├── web.xml
     ├── framework-config.xml
-    └── views/   (JSPs de cada pantalla)
+    └── views/   (JSPs de cada pantalla; cursos/ y cursos-jdbc/ son pares 1:1)
+
+loadtest/   plan de JMeter + resultados de referencia (ver loadtest/README.md)
 ```
+
+## Pruebas de carga
+
+Plan de JMeter (`loadtest/nimbus-loadtest.jmx`) que ejercita ambos caminos de Curso
+(memoria y H2/JDBC) más el resto de endpoints, con 50 usuarios virtuales concurrentes
+sostenidos — muy por encima de la concurrencia real esperada en PRD. Última corrida de
+referencia: 8407 requests, 0% de error, throughput ~70 req/s. Ver
+[`loadtest/README.md`](loadtest/README.md) para el detalle completo, cómo correrlo y el
+desglose por endpoint.
 
 ## Licencia
 

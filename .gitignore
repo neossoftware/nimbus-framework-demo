@@ -2,6 +2,10 @@ target/
 *.class
 *.log
 
+# Resultados de pruebas de carga (regenerables, ver loadtest/README.md)
+loadtest/results.jtl
+loadtest/report/
+
 # IDE
 .idea/
 *.iml

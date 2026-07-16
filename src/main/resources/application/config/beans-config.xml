@@ -26,4 +26,37 @@
 
     <bean id="cursoValidator" class="com.example.validation.CursoValidator"/>
 
+    <!--
+      DataSource para el demo de JdbcTemplate/NamedParameterJdbcTemplate (com.example.dao).
+      H2 en memoria vía DriverManagerDataSource: simple, sin pool, apto para dev/standalone.
+
+      En WAS 8.5 / Tomcat productivo, la alternativa recomendada es usar el pool de
+      conexiones que gestiona el propio contenedor, expuesto por JNDI, reemplazando este
+      bean por:
+
+        <bean id="dataSource" class="com.nimbusframework.jdbc.datasource.JndiObjectFactoryBean">
+            <property name="jndiName" value="java:comp/env/jdbc/miDataSource"/>
+        </bean>
+
+      (En Tomcat ese recurso se declara con un <Resource type="javax.sql.DataSource" .../>
+      en META-INF/context.xml o conf/context.xml; en WAS 8.5 se crea un JDBC Provider +
+      Data Source desde la consola administrativa.) Cambiar de una opción a la otra no
+      requiere tocar nada más: JdbcTemplate/NamedParameterJdbcTemplate solo dependen de
+      la interfaz javax.sql.DataSource.
+    -->
+    <bean id="dataSource" class="com.nimbusframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="${db.driver}"/>
+        <property name="url" value="${db.url}"/>
+        <property name="username" value="${db.user}"/>
+        <property name="password" value="${db.password}"/>
+    </bean>
+
+    <bean id="jdbcTemplate" class="com.nimbusframework.jdbc.JdbcTemplate">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <bean id="namedParameterJdbcTemplate" class="com.nimbusframework.jdbc.namedparam.NamedParameterJdbcTemplate">
+        <property name="jdbcOperations" ref="jdbcTemplate"/>
+    </bean>
+
 </mvc-config>

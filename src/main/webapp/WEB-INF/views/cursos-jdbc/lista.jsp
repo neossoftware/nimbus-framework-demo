@@ -5,7 +5,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Cursos — Nimbus</title>
+    <title>Cursos (H2/JDBC) — Nimbus</title>
     <style>
         * { box-sizing: border-box; }
         body { font-family: Arial, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 20px; color: #222; }
@@ -42,14 +42,14 @@
 </head>
 <body>
 
-    <h1>Gestión de Cursos</h1>
-    <p class="sub">CRUD completo con datos en memoria &mdash; iteración 4</p>
+    <h1>Gestión de Cursos (H2/JDBC)</h1>
+    <p class="sub">CRUD completo con datos persistidos en H2 vía JdbcTemplate/NamedParameterJdbcTemplate</p>
 
     <div class="toolbar">
         <span><strong><c:out value="${cursos.size()}"/> curso(s) registrados</strong></span>
         <span>
-            <a href="${ctx}/cursos/exportar.do" class="btn btn-blue">⭳ Exportar CSV</a>
-            <a href="${ctx}/cursos/nuevo.do" class="btn btn-green">+ Nuevo Curso</a>
+            <a href="${ctx}/cursos-jdbc/exportar.do" class="btn btn-blue">⭳ Exportar CSV</a>
+            <a href="${ctx}/cursos-jdbc/nuevo.do" class="btn btn-green">+ Nuevo Curso</a>
         </span>
     </div>
 
@@ -68,7 +68,7 @@
             <c:choose>
                 <c:when test="${empty cursos}">
                     <tr>
-                        <td colspan="6" class="empty">No hay cursos registrados. <a href="${ctx}/cursos/nuevo.do">Crea el primero</a>.</td>
+                        <td colspan="6" class="empty">No hay cursos registrados. <a href="${ctx}/cursos-jdbc/nuevo.do">Crea el primero</a>.</td>
                     </tr>
                 </c:when>
                 <c:otherwise>
@@ -84,8 +84,8 @@
                                 </span>
                             </td>
                             <td class="actions">
-                                <a href="${ctx}/cursos/editar/${c.id}.do">Editar</a>
-                                <a href="${ctx}/cursos/eliminar/${c.id}.do" class="del"
+                                <a href="${ctx}/cursos-jdbc/editar/${c.id}.do">Editar</a>
+                                <a href="${ctx}/cursos-jdbc/eliminar/${c.id}.do" class="del"
                                    onclick="return confirm('¿Eliminar el curso &quot;<c:out value="${c.nombre}"/>&quot;?')">Eliminar</a>
                             </td>
                         </tr>
@@ -98,7 +98,7 @@
     <p style="margin-top: 24px;">
         <a href="${ctx}/home.do" style="color:#2c5f8a;">&larr; Inicio</a>
         &nbsp;|&nbsp;
-        <a href="${ctx}/cursos-jdbc/lista.do" style="color:#2c5f8a;">Ver la variante H2/JDBC &rarr;</a>
+        <a href="${ctx}/cursos/lista.do" style="color:#2c5f8a;">Ver la variante en memoria &rarr;</a>
     </p>
 
 </body>
