@@ -44,6 +44,7 @@
         .cat-archivos   { background: #ffe8cc; color: #8a4b00; }
         .cat-rest       { background: #d4edda; color: #155724; }
         .cat-config     { background: #d1ecf1; color: #0c5460; }
+        .cat-jdbc       { background: #ede4ff; color: #5b21b6; }
 
         /* Formularios (únicos endpoints POST que no se pueden probar con un link) */
         .forms { display: flex; gap: 24px; flex-wrap: wrap; }
@@ -74,6 +75,7 @@
         <span class="badge cat-archivos">Archivos</span>
         <span class="badge cat-rest">REST</span>
         <span class="badge cat-config">Config. XML</span>
+        <span class="badge cat-jdbc">H2 / JdbcTemplate</span>
     </div>
 
     <!-- ================================================================
@@ -186,6 +188,21 @@
                 <td class="accion"><a href="${ctx}/cursos/exportar.do">Descargar CSV</a></td>
             </tr>
 
+            <tr style="background:#fbf9ff;">
+                <td class="verb get">GET</td>
+                <td><code>/cursos-jdbc/lista.do</code></td>
+                <td><code>CursoJdbcController</code></td>
+                <td><span class="badge cat-jdbc">H2 / JdbcTemplate</span></td>
+                <td>
+                    Mismo CRUD que <code>/cursos/lista.do</code> pero persistido en H2 real,
+                    vía <code>JdbcTemplate</code> (lecturas simples) y
+                    <code>NamedParameterJdbcTemplate</code> (INSERT/UPDATE con parámetros nombrados +
+                    <code>GeneratedKeyHolder</code>). Misma <code>CursoValidator</code>, seleccionado con
+                    <code>@Qualifier("cursoServiceJdbcImpl")</code>.
+                </td>
+                <td class="accion"><a href="${ctx}/cursos-jdbc/lista.do">Ver cursos (H2)</a></td>
+            </tr>
+
             <tr>
                 <td class="verb get">GET</td>
                 <td><code>/about.do</code></td>
@@ -234,6 +251,29 @@
             <tr style="background:#fff5f9;">
                 <td class="verb delete" style="color:#991b1b;">DELETE</td>
                 <td><code>/api/cursos/<strong>{id}</strong></code></td>
+            </tr>
+
+            <tr style="background:#fbf9ff;">
+                <td class="verb get" style="color:#166534;">GET</td>
+                <td><code>/api/cursos-jdbc</code><br/><code style="opacity:.7">/api/cursos-jdbc/<strong>{id}</strong></code></td>
+                <td rowspan="3" style="vertical-align:middle;"><code>CursoJdbcRestController</code></td>
+                <td rowspan="3" style="vertical-align:middle;"><span class="badge cat-jdbc">H2 / JdbcTemplate</span></td>
+                <td rowspan="3" style="vertical-align:middle;">
+                    Mismas rutas y verbos que <code>CursoRestController</code>, respaldadas por H2 real vía
+                    <code>CursoJdbcDaoImpl</code> (<code>JdbcTemplate</code> + <code>NamedParameterJdbcTemplate</code>).
+                    Sin handler local de excepción — se apoya en el <code>GlobalExceptionHandler</code> global.
+                </td>
+                <td rowspan="3" class="accion" style="vertical-align:middle;">
+                    <a href="${ctx}/api-explorer.do" style="background:#5b21b6;">API Explorer &#8599;</a>
+                </td>
+            </tr>
+            <tr style="background:#fbf9ff;">
+                <td class="verb post" style="color:#854d0e;">POST / PUT</td>
+                <td><code>/api/cursos-jdbc</code><br/><code style="opacity:.7">/api/cursos-jdbc/<strong>{id}</strong></code></td>
+            </tr>
+            <tr style="background:#fbf9ff;">
+                <td class="verb delete" style="color:#991b1b;">DELETE</td>
+                <td><code>/api/cursos-jdbc/<strong>{id}</strong></code></td>
             </tr>
 
             <tr>

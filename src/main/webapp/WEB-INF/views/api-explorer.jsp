@@ -57,6 +57,16 @@
         .auth-bar input:focus { outline: none; border-color: #7dd3fc; }
         .auth-bar .lock { color: #fbbf24; font-size: 14px; }
 
+        .backend-bar {
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 24px; font-size: 12px;
+        }
+        .backend-bar label { color: #475569; font-weight: bold; }
+        .backend-bar select {
+            font-family: monospace; font-size: 12px; padding: 5px 10px;
+            border: 1px solid #cbd5e1; border-radius: 4px; background: #fff;
+        }
+
         /* ── Endpoint cards ─────────────────────────── */
         .endpoint {
             background: #fff; border-radius: 8px; margin-bottom: 16px;
@@ -179,19 +189,27 @@
     <div class="page-header">
         <div>
             <h1>REST API Explorer <span class="badge it6">it 6</span></h1>
-            <p>Prueba los endpoints de <strong>CursoRestController</strong> directamente desde el navegador</p>
+            <p>Prueba los endpoints de <strong>CursoRestController</strong> / <strong>CursoJdbcRestController</strong>
+               directamente desde el navegador &mdash; elegí el backend abajo</p>
         </div>
         <a class="back-link" href="${ctx}/home.do">&#8592; Home</a>
     </div>
 
     <!-- Base URL + Auth -->
     <div class="base-url">
-        Base URL: <span>${ctx}/api/cursos</span>
+        Base URL: <span id="base-url-display">${ctx}/api/cursos</span>
     </div>
     <div class="auth-bar">
         <span class="lock">&#128274;</span>
         <label>X-API-Key:</label>
         <input type="text" id="api-key" value="nimbus-secret-2024" placeholder="Introduce tu API key"/>
+    </div>
+    <div class="backend-bar">
+        <label>Backend:</label>
+        <select id="backend-select" onchange="updateBaseUrlDisplay()">
+            <option value="cursos">En memoria (CursoRestController)</option>
+            <option value="cursos-jdbc">H2 / JdbcTemplate (CursoJdbcRestController)</option>
+        </select>
     </div>
 
     <!-- ================================================================
@@ -385,8 +403,17 @@
         return document.getElementById('api-key').value.trim();
     }
 
+    // ── Selector de backend (en memoria vs H2/JdbcTemplate) ───────────────────
+    function backendPath() {
+        return document.getElementById('backend-select').value; // "cursos" o "cursos-jdbc"
+    }
+
+    function updateBaseUrlDisplay() {
+        document.getElementById('base-url-display').textContent = CTX + '/api/' + backendPath();
+    }
+
     function buildRequest(epId) {
-        const base    = CTX + '/api/cursos';
+        const base    = CTX + '/api/' + backendPath();
         const authHdr = { 'X-API-Key': apiKey() };
 
         if (epId === 'ep-list') {
